@@ -1,11 +1,16 @@
 import express, { Request, Response } from 'express';
+import bookingRouter from './routes/booking.routes';
 
 const app = express();
 const port = 5000;
 
+app.use(express.json());
+
 app.get('/', (req: Request, res: Response) => {
   res.status(200).json({ status: 'active', message: 'CoSpace API is running' });
 });
+
+app.use('/bookings', bookingRouter);
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
