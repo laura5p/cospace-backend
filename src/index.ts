@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express';
 import bookingRouter from './routes/booking.routes';
+import { logger } from './middleware/logger';
+import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 const port = 5000;
 
+app.use(logger);
 app.use(express.json());
 
 app.get('/', (req: Request, res: Response) => {
@@ -11,6 +14,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/bookings', bookingRouter);
+app.use(errorHandler);
 
 const server = app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
