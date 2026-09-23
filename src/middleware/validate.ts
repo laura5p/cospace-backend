@@ -1,14 +1,16 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 
-export function validate(requiredFields: string[]) {
+export function validateSchema(schema: z.ZodType) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const missing = requiredFields.filter((field) => !(field in req.body));
+    const result = schema.safeParse(req.body);
 
-    if (missing.length > 0) {
-      res.status(400).json({ error: "Missing required fields", missing });
+    if (!result.success) {
+      next(result.error);
       return;
     }
 
+    req.body = result.data;
     next();
   };
 }

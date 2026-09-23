@@ -6,3 +6,11 @@ export const createBookingSchema = z.object({
   date: z.iso.date(),
   active: z.boolean().default(true),
 });
+
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+export const bookingSchema = createBookingSchema.extend({
+  id: z.string()
+});
+
+export type Booking = z.infer<typeof bookingSchema>;
