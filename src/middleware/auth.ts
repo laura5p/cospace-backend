@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 declare global {
   namespace Express {
@@ -9,13 +9,13 @@ declare global {
 }
 
 export function auth(req: Request, res: Response, next: NextFunction): void {
-  const token = req.headers['authorization'];
+  const token = req.headers["authorization"];
 
-  if (token !== 'super-secret-key') {
-    res.status(401).json({ error: 'Unauthorized' });
+  if (token !== "super-secret-key") {
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
-  req.user = { role: 'admin' };
+  req.user = { role: "admin" };
   next();
 }
