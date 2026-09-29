@@ -1,4 +1,5 @@
-import { BookingRepository, Booking } from '../repositories/booking.repositories';
+import { BookingRepository } from '../repositories/booking.repositories';
+import type { Booking, CreateBookingInput } from '../schemas/booking.schema';
 
 export class BookingService {
   private repository: BookingRepository;
@@ -17,27 +18,15 @@ export class BookingService {
     return this.repository.findById(id);
   }
 
-  create(desk: string, floor: string, date: string): Booking {
-    console.log('[Service] create', desk);
-    if (desk.length < 3) {
-      throw new Error('Desk name must be at least 3 characters long');
-    }
-    const newBooking: Booking = {
-      id: String(Date.now()),
-      desk,
-      floor,
-      date,
-      active: true,
-    };
+  create(data: CreateBookingInput): Booking {
+    console.log('[Service] create', data.desk);
+    const newBooking: Booking = { id: String(Date.now()), ...data };
     return this.repository.create(newBooking);
   }
 
-  update(id: string, data: Booking): Booking | undefined {
+  update(id: string, data: CreateBookingInput): Booking | undefined {
     console.log('[Service] update', id);
-    if (data.desk.length < 3) {
-      throw new Error('Desk name must be at least 3 characters long');
-    }
-    return this.repository.update(id, data);
+    return this.repository.update(id, { id, ...data });
   }
 
   patch(id: string, active: boolean): Booking | undefined {

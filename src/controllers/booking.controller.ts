@@ -27,29 +27,19 @@ export class BookingController {
 
   create(req: Request, res: Response): void {
     console.log('[Controller] create');
-    try {
-      const { desk, floor, date } = req.body;
-      const booking = this.service.create(desk, floor, date);
-      res.status(201).json(booking);
-    } catch (err) {
-      res.status(400).json({ error: (err as Error).message });
-    }
+    const booking = this.service.create(req.body);
+    res.status(201).json(booking);
   }
 
   update(req: Request, res: Response): void {
     console.log('[Controller] update');
-    try {
-      const id = req.params.id as string;
-      const { desk, floor, date, active } = req.body;
-      const booking = this.service.update(id, { id, desk, floor, date, active });
-      if (!booking) {
-        res.status(404).json({ error: 'Booking not found' });
-        return;
-      }
-      res.status(200).json(booking);
-    } catch (err) {
-      res.status(400).json({ error: (err as Error).message });
+    const id = req.params.id as string;
+    const booking = this.service.update(id, req.body);
+    if (!booking) {
+      res.status(404).json({ error: 'Booking not found' });
+      return;
     }
+    res.status(200).json(booking);
   }
 
   patch(req: Request, res: Response): void {
