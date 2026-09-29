@@ -14,3 +14,8 @@ export const bookingSchema = createBookingSchema.extend({
 });
 
 export type Booking = z.infer<typeof bookingSchema>;
+export const patchBookingSchema = z.object({
+  active: z.boolean()
+});
+
+export type PatchBookingInput = z.infer<typeof patchBookingSchema>;
