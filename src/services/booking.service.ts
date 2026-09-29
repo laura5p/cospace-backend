@@ -1,5 +1,6 @@
 import { BookingRepository } from "../repositories/booking.repositories";
 import type { Booking, CreateBookingInput } from "../schemas/booking.schema";
+import { NotFoundError } from "../errors";
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -23,9 +24,10 @@ export class BookingService {
     return this.repository.findAll();
   }
 
-  getById(id: string): Booking | undefined {
-    console.log("[Service] getById", id);
-    return this.repository.findById(id);
+  getById(id: string): Booking {
+    const booking = this.repository.findById(id);
+    if (!booking) throw new NotFoundError(`Booking ${id} not found`);
+    return booking;
   }
 
   create(data: CreateBookingInput): Booking {
@@ -34,19 +36,21 @@ export class BookingService {
     return this.repository.create(newBooking);
   }
 
-  update(id: string, data: CreateBookingInput): Booking | undefined {
-    console.log("[Service] update", id);
-    return this.repository.update(id, { id, ...data });
+  update(id: string, data: CreateBookingInput): Booking {
+    const updated = this.repository.update(id, { id, ...data });
+    if (!updated) throw new NotFoundError(`Booking ${id} not found`);
+    return updated;
   }
 
-  patch(id: string, active: boolean): Booking | undefined {
-    console.log("[Service] patch", id);
-    return this.repository.patch(id, active);
+  patch(id: string, active: boolean): Booking {
+    const patched = this.repository.patch(id, active);
+    if (!patched) throw new NotFoundError(`Booking ${id} not found`);
+    return patched;
   }
 
-  delete(id: string): boolean {
-    console.log("[Service] delete", id);
-    return this.repository.delete(id);
+  delete(id: string): void {
+    if (!this.repository.delete(id))
+      throw new NotFoundError(`Booking ${id} not found`);
   }
 
   getPaginatedBookings(page: number, limit: number): PaginatedResult<Booking> {
