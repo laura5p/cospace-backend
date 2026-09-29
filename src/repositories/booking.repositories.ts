@@ -23,6 +23,41 @@ export class BookingRepository {
       date: "2026-09-22",
       active: false,
     },
+    {
+      id: "4",
+      desk: "Desk C1",
+      floor: "Floor 3",
+      date: "2026-09-23",
+      active: true,
+    },
+    {
+      id: "5",
+      desk: "Desk C2",
+      floor: "Floor 3",
+      date: "2026-09-24",
+      active: true,
+    },
+    {
+      id: "6",
+      desk: "Desk D1",
+      floor: "Floor 4",
+      date: "2026-09-25",
+      active: false,
+    },
+    {
+      id: "7",
+      desk: "Desk D2",
+      floor: "Floor 4",
+      date: "2026-09-26",
+      active: true,
+    },
+    {
+      id: "8",
+      desk: "Window Desk A",
+      floor: "Floor 2",
+      date: "2026-09-27",
+      active: true,
+    },
   ];
 
   findAll(): Booking[] {
@@ -33,6 +68,15 @@ export class BookingRepository {
   findById(id: string): Booking | undefined {
     console.log("[Repository] findById", id);
     return this.bookings.find((b) => b.id === id);
+  }
+
+  findPaginated(skip: number, limit: number): Booking[] {
+    console.log("[Repository] findPaginated", skip, limit);
+    return this.bookings.slice(skip, skip + limit);
+  }
+
+  count(): number {
+    return this.bookings.length;
   }
 
   create(booking: Booking): Booking {
