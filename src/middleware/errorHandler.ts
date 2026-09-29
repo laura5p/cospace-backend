@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
+import { AppError } from "../utils/appError";
+import { HTTP_STATUS } from "../constants/httpStatus";
 
 export function errorHandler(
   err: Error,
@@ -7,16 +9,43 @@ export function errorHandler(
   res: Response,
   next: NextFunction,
 ): void {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+
   if (err instanceof ZodError) {
-    res.status(400).json({
-      error: "Validation Failed",
-      details: err.issues.map(issue => ({
-        field: issue.path,
-        message: issue.message,
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      status: "fail",
+      message: "Validation failed",
+      errors: err.issues.map((i) => ({
+        field: i.path.join("."),
+        message: i.message,
       })),
     });
     return;
   }
+
+  if (err instanceof SyntaxError && "body" in err) {
+    res.status(HTTP_STATUS.BAD_REQUEST).json({
+      status: "fail",
+      message: "Malformed JSON in request body",
+      errors: [],
+    });
+    return;
+  }
+
+  if (err instanceof AppError && err.isOperational) {
+    res
+      .status(err.statusCode)
+      .json({ status: err.status, message: err.message, errors: [] });
+    return;
+  }
+
   console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+  res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+    status: "error",
+    message: "Something went wrong on our end",
+    errors: [],
+  });
 }
