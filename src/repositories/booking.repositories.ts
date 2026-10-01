@@ -1,111 +1,78 @@
-import { Booking } from "../schemas/booking.schema";
+import { prisma } from "../utils/prisma";
+import { Prisma } from "../generated/prisma/client";
+import type { Booking, CreateBookingInput } from "../schemas/booking.schema";
+
+type BookingRow = { id: number; user_id: number; desk_id: number; booking_date: Date; active: boolean };
+
+const toBooking = (row: BookingRow): Booking => ({
+  id: row.id,
+  user_id: row.user_id,
+  desk_id: row.desk_id,
+  date: row.booking_date.toISOString().slice(0, 10),
+  active: row.active,
+});
+
+const toDate = (date: string): Date => new Date(`${date}T00:00:00.000Z`);
+
+const isNotFound = (err: unknown): boolean =>
+  err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025";
 
 export class BookingRepository {
-  private bookings: Booking[] = [
-    {
-      id: "1",
-      desk: "Desk A1",
-      floor: "Floor 1",
-      date: "2026-09-20",
-      active: true,
-    },
-    {
-      id: "2",
-      desk: "Desk B2",
-      floor: "Floor 2",
-      date: "2026-09-21",
-      active: true,
-    },
-    {
-      id: "3",
-      desk: "Desk A2",
-      floor: "Floor 1",
-      date: "2026-09-22",
-      active: false,
-    },
-    {
-      id: "4",
-      desk: "Desk C1",
-      floor: "Floor 3",
-      date: "2026-09-23",
-      active: true,
-    },
-    {
-      id: "5",
-      desk: "Desk C2",
-      floor: "Floor 3",
-      date: "2026-09-24",
-      active: true,
-    },
-    {
-      id: "6",
-      desk: "Desk D1",
-      floor: "Floor 4",
-      date: "2026-09-25",
-      active: false,
-    },
-    {
-      id: "7",
-      desk: "Desk D2",
-      floor: "Floor 4",
-      date: "2026-09-26",
-      active: true,
-    },
-    {
-      id: "8",
-      desk: "Window Desk A",
-      floor: "Floor 2",
-      date: "2026-09-27",
-      active: true,
-    },
-  ];
-
-  findAll(): Booking[] {
-    console.log("[Repository] findAll");
-    return this.bookings;
+  async findAll(): Promise<Booking[]> {
+    const rows = await prisma.booking.findMany({ orderBy: { id: "asc" } });
+    return rows.map(toBooking);
   }
 
-  findById(id: string): Booking | undefined {
-    console.log("[Repository] findById", id);
-    return this.bookings.find((b) => b.id === id);
+  async findPaginated(skip: number, limit: number): Promise<Booking[]> {
+    const rows = await prisma.booking.findMany({ skip, take: limit, orderBy: { id: "asc" } });
+    return rows.map(toBooking);
   }
 
-  findPaginated(skip: number, limit: number): Booking[] {
-    console.log("[Repository] findPaginated", skip, limit);
-    return this.bookings.slice(skip, skip + limit);
+  async count(): Promise<number> {
+    return prisma.booking.count();
   }
 
-  count(): number {
-    return this.bookings.length;
+  async findById(id: number): Promise<Booking | null> {
+    const row = await prisma.booking.findUnique({ where: { id } });
+    return row ? toBooking(row) : null;
   }
 
-  create(booking: Booking): Booking {
-    console.log("[Repository] create", booking);
-    this.bookings.push(booking);
-    return booking;
+  async create(data: CreateBookingInput): Promise<Booking> {
+    const row = await prisma.booking.create({
+      data: { user_id: data.user_id, desk_id: data.desk_id, booking_date: toDate(data.date), active: data.active },
+    });
+    return toBooking(row);
   }
 
-  update(id: string, data: Booking): Booking | undefined {
-    console.log("[Repository] update", id);
-    const index = this.bookings.findIndex((b) => b.id === id);
-    if (index === -1) return undefined;
-    this.bookings[index] = data;
-    return this.bookings[index];
+  async update(id: number, data: CreateBookingInput): Promise<Booking | null> {
+    try {
+      const row = await prisma.booking.update({
+        where: { id },
+        data: { user_id: data.user_id, desk_id: data.desk_id, booking_date: toDate(data.date), active: data.active },
+      });
+      return toBooking(row);
+    } catch (err) {
+      if (isNotFound(err)) return null;
+      throw err;
+    }
   }
 
-  patch(id: string, active: boolean): Booking | undefined {
-    console.log("[Repository] patch", id);
-    const index = this.bookings.findIndex((b) => b.id === id);
-    if (index === -1) return undefined;
-    this.bookings[index].active = active;
-    return this.bookings[index];
+  async patch(id: number, active: boolean): Promise<Booking | null> {
+    try {
+      return toBooking(await prisma.booking.update({ where: { id }, data: { active } }));
+    } catch (err) {
+      if (isNotFound(err)) return null;
+      throw err;
+    }
   }
 
-  delete(id: string): boolean {
-    console.log("[Repository] delete", id);
-    const index = this.bookings.findIndex((b) => b.id === id);
-    if (index === -1) return false;
-    this.bookings.splice(index, 1);
-    return true;
+  async delete(id: number): Promise<boolean> {
+    try {
+      await prisma.booking.delete({ where: { id } });
+      return true;
+    } catch (err) {
+      if (isNotFound(err)) return false;
+      throw err;
+    }
   }
 }

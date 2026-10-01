@@ -19,54 +19,46 @@ export class BookingService {
     this.repository = repository;
   }
 
-  getAll(): Booking[] {
+  async getAll(): Promise<Booking[]> {
     console.log("[Service] getAll");
     return this.repository.findAll();
   }
 
-  getById(id: string): Booking {
-    const booking = this.repository.findById(id);
-    if (!booking) throw new NotFoundError(`Booking ${id} not found`);
-    return booking;
-  }
+ async getById(id: number): Promise<Booking> {
+  const booking = await this.repository.findById(id);
+  if (!booking) throw new NotFoundError(`Booking ${id} not found`);
+  return booking;
+}
 
-  create(data: CreateBookingInput): Booking {
-    console.log("[Service] create", data.desk);
-    const newBooking: Booking = { id: String(Date.now()), ...data };
-    return this.repository.create(newBooking);
-  }
+async create(data: CreateBookingInput): Promise<Booking> {
+  return this.repository.create(data);
+}
 
-  update(id: string, data: CreateBookingInput): Booking {
-    const updated = this.repository.update(id, { id, ...data });
-    if (!updated) throw new NotFoundError(`Booking ${id} not found`);
-    return updated;
-  }
+async update(id: number, data: CreateBookingInput): Promise<Booking> {
+  const updated = await this.repository.update(id, data);
+  if (!updated) throw new NotFoundError(`Booking ${id} not found`);
+  return updated;
+}
 
-  patch(id: string, active: boolean): Booking {
-    const patched = this.repository.patch(id, active);
-    if (!patched) throw new NotFoundError(`Booking ${id} not found`);
-    return patched;
-  }
+async patch(id: number, active: boolean): Promise<Booking> {
+  const patched = await this.repository.patch(id, active);
+  if (!patched) throw new NotFoundError(`Booking ${id} not found`);
+  return patched;
+}
 
-  delete(id: string): void {
-    if (!this.repository.delete(id))
-      throw new NotFoundError(`Booking ${id} not found`);
-  }
+async delete(id: number): Promise<void> {
+  if (!(await this.repository.delete(id))) throw new NotFoundError(`Booking ${id} not found`);
+}
 
-  getPaginatedBookings(page: number, limit: number): PaginatedResult<Booking> {
-    console.log("[Service] getPaginatedBookings", page, limit);
-    const skip = (page - 1) * limit;
-    const totalItems = this.repository.count();
-    const data = this.repository.findPaginated(skip, limit);
-
-    return {
-      data,
-      meta: {
-        totalItems,
-        itemsPerPage: limit,
-        currentPage: page,
-        totalPages: Math.ceil(totalItems / limit),
-      },
-    };
-  }
+ async getPaginatedBookings(page: number, limit: number): Promise<PaginatedResult<Booking>> {
+  const skip = (page - 1) * limit;
+  const [totalItems, data] = await Promise.all([
+    this.repository.count(),
+    this.repository.findPaginated(skip, limit),
+  ]);
+  return {
+    data,
+    meta: { totalItems, itemsPerPage: limit, currentPage: page, totalPages: Math.ceil(totalItems / limit) },
+  };
+}
 }
