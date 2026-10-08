@@ -3,12 +3,14 @@ import bookingRouter from './routes/booking.routes';
 import { logger } from './middleware/logger';
 import { errorHandler } from './middleware/errorHandler';
 import "dotenv/config";
+import cors from 'cors';
 
 const app = express();
 const port = 5000;
 
 app.use(logger);
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:3000" }));
 
 app.get('/', (req: Request, res: Response) => {
   res.status(200).json({ status: 'active', message: 'CoSpace API is running' });
