@@ -24,27 +24,34 @@ export class BookingService {
     return this.repository.findAll();
   }
 
- async getById(id: number): Promise<Booking> {
-  const booking = await this.repository.findById(id);
-  if (!booking) throw new NotFoundError(`Booking ${id} not found`);
-  return booking;
-}
+  getById(id: string): Booking {
+    const booking = this.repository.findById(id);
+    if (!booking) throw new NotFoundError(`Booking ${id} not found`);
+    return booking;
+  }
 
-async create(data: CreateBookingInput): Promise<Booking> {
-  return this.repository.create(data);
-}
+  create(data: CreateBookingInput): Booking {
+    console.log("[Service] create", data.desk);
+    const newBooking: Booking = { id: String(Date.now()), ...data };
+    return this.repository.create(newBooking);
+  }
 
-async update(id: number, data: CreateBookingInput): Promise<Booking> {
-  const updated = await this.repository.update(id, data);
-  if (!updated) throw new NotFoundError(`Booking ${id} not found`);
-  return updated;
-}
+  update(id: string, data: CreateBookingInput): Booking {
+    const updated = this.repository.update(id, { id, ...data });
+    if (!updated) throw new NotFoundError(`Booking ${id} not found`);
+    return updated;
+  }
 
-async patch(id: number, active: boolean): Promise<Booking> {
-  const patched = await this.repository.patch(id, active);
-  if (!patched) throw new NotFoundError(`Booking ${id} not found`);
-  return patched;
-}
+  patch(id: string, active: boolean): Booking {
+    const patched = this.repository.patch(id, active);
+    if (!patched) throw new NotFoundError(`Booking ${id} not found`);
+    return patched;
+  }
+
+  delete(id: string): void {
+    if (!this.repository.delete(id))
+      throw new NotFoundError(`Booking ${id} not found`);
+  }
 
 async delete(id: number): Promise<void> {
   if (!(await this.repository.delete(id))) throw new NotFoundError(`Booking ${id} not found`);

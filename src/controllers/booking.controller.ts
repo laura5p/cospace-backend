@@ -14,79 +14,57 @@ function parsePositiveInt(value: unknown, fallback: number): number {
   return Math.max(parsed, 1);
 }
 
-function parseId(value: unknown): number {
-  const id = typeof value === "string" ? parseInt(value, 10) : NaN;
-  if (Number.isNaN(id) || id < 1)
-    throw new BadRequestError("Booking id must be a positive integer");
-  return id;
-}
-
 export class BookingController {
   constructor(private service: BookingService) {}
 
-  async getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+  getAll(req: Request, res: Response, next: NextFunction): void {
     try {
       const page = parsePositiveInt(req.query.page, DEFAULT_PAGE);
-      const limit = Math.min(
-        parsePositiveInt(req.query.limit, DEFAULT_LIMIT),
-        MAX_LIMIT,
-      );
-      res
-        .status(HTTP_STATUS.OK)
-        .json(await this.service.getPaginatedBookings(page, limit));
+      const limit = Math.min(parsePositiveInt(req.query.limit, DEFAULT_LIMIT), MAX_LIMIT);
+      res.status(HTTP_STATUS.OK).json(this.service.getPaginatedBookings(page, limit));
     } catch (err) {
       next(err);
     }
   }
 
-  async getById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
+  getById(req: Request, res: Response, next: NextFunction): void {
     try {
-      res
-        .status(HTTP_STATUS.OK)
-        .json(await this.service.getById(parseId(req.params.id)));
+      res.status(HTTP_STATUS.OK).json(this.service.getById(req.params.id as string));
     } catch (err) {
       next(err);
     }
   }
 
-  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  create(req: Request, res: Response, next: NextFunction): void {
     try {
-      res.status(HTTP_STATUS.CREATED).json(await this.service.create(req.body));
+      res.status(HTTP_STATUS.CREATED).json(this.service.create(req.body));
     } catch (err) {
       next(err);
     }
   }
 
-  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
+  update(req: Request, res: Response, next: NextFunction): void {
     try {
-      res
-        .status(HTTP_STATUS.OK)
-        .json(await this.service.update(parseId(req.params.id), req.body));
+      res.status(HTTP_STATUS.OK).json(this.service.update(req.params.id as string, req.body));
     } catch (err) {
       next(err);
     }
   }
 
-  async patch(req: Request, res: Response, next: NextFunction): Promise<void> {
+  patch(req: Request, res: Response, next: NextFunction): void {
     try {
-      res
-        .status(HTTP_STATUS.OK)
-        .json(await this.service.patch(parseId(req.params.id), req.body.active));
+      res.status(HTTP_STATUS.OK).json(this.service.patch(req.params.id as string, req.body.active));
     } catch (err) {
       next(err);
     }
   }
 
-  async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    await this.service.delete(parseId(req.params.id));
-    res.status(HTTP_STATUS.NO_CONTENT).send();
-  } catch (err) {
-    next(err);
+  delete(req: Request, res: Response, next: NextFunction): void {
+    try {
+      this.service.delete(req.params.id as string);
+      res.status(HTTP_STATUS.NO_CONTENT).send();
+    } catch (err) {
+      next(err);
+    }
   }
-}
 }
