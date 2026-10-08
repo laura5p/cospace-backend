@@ -19,7 +19,7 @@ export class BookingService {
     this.repository = repository;
   }
 
-  getAll(): Booking[] {
+  async getAll(): Promise<Booking[]> {
     console.log("[Service] getAll");
     return this.repository.findAll();
   }
@@ -53,20 +53,19 @@ export class BookingService {
       throw new NotFoundError(`Booking ${id} not found`);
   }
 
-  getPaginatedBookings(page: number, limit: number): PaginatedResult<Booking> {
-    console.log("[Service] getPaginatedBookings", page, limit);
-    const skip = (page - 1) * limit;
-    const totalItems = this.repository.count();
-    const data = this.repository.findPaginated(skip, limit);
+async delete(id: number): Promise<void> {
+  if (!(await this.repository.delete(id))) throw new NotFoundError(`Booking ${id} not found`);
+}
 
-    return {
-      data,
-      meta: {
-        totalItems,
-        itemsPerPage: limit,
-        currentPage: page,
-        totalPages: Math.ceil(totalItems / limit),
-      },
-    };
-  }
+ async getPaginatedBookings(page: number, limit: number): Promise<PaginatedResult<Booking>> {
+  const skip = (page - 1) * limit;
+  const [totalItems, data] = await Promise.all([
+    this.repository.count(),
+    this.repository.findPaginated(skip, limit),
+  ]);
+  return {
+    data,
+    meta: { totalItems, itemsPerPage: limit, currentPage: page, totalPages: Math.ceil(totalItems / limit) },
+  };
+}
 }

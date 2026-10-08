@@ -1,6 +1,7 @@
 import { BookingService } from "../services/booking.service";
 import { Request, Response, NextFunction } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { BadRequestError } from "../errors";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;

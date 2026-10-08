@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { AppError } from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { Prisma } from "../generated/prisma";
 
 export function errorHandler(
   err: Error,
@@ -40,6 +41,29 @@ export function errorHandler(
       .status(err.statusCode)
       .json({ status: err.status, message: err.message, errors: [] });
     return;
+  }
+
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === "P2002") {
+      res
+        .status(HTTP_STATUS.CONFLICT)
+        .json({
+          status: "fail",
+          message: "That desk is already booked for this date",
+          errors: [],
+        });
+      return;
+    }
+    if (err.code === "P2003") {
+      res
+        .status(HTTP_STATUS.BAD_REQUEST)
+        .json({
+          status: "fail",
+          message: "The referenced user or desk does not exist",
+          errors: [],
+        });
+      return;
+    }
   }
 
   console.error(err.stack);

@@ -4,7 +4,10 @@ import { BookingService } from "../services/booking.service";
 import { BookingRepository } from "../repositories/booking.repositories";
 import { auth, requireRole } from "../middleware/auth";
 import { validateSchema } from "../middleware/validate";
-import { createBookingSchema, patchBookingSchema } from "../schemas/booking.schema";
+import {
+  createBookingSchema,
+  patchBookingSchema,
+} from "../schemas/booking.schema";
 
 const repository = new BookingRepository();
 const service = new BookingService(repository);

@@ -1,15 +1,15 @@
-Validation
+# Validation
 Booking requests are validated with a Zod schema (src/schemas/booking.schema.ts) at the route boundary. The validateSchema middleware parses req.body, replaces it with the sanitised result, and forwards any ZodError to the global error handler, which returns a structured 400.
-Desk name too short
-Command:
+# Desk name too short
+# Command:
 curl -i -X POST <http://localhost:5000/bookings> -H "Authorization: super-secret-key" -H "Content-Type: application/json" -d '{"desk":"Go", "floor":"Floor 1", "date":"2026-09-30"}'
 ​
-Response:
+# Response:
 HTTP/1.1 400 Bad Request
 
 {"error":"Validation Failed","details":[{"field":["desk"],"message":"Too small: expected string to have >=3 characters"}]}
 ​
-Invalid date
+# Invalid date
 Command:
 curl -i -X POST <http://localhost:5000/bookings> -H "Authorization: super-secret-key" -H "Content-Type: application/json" -d '{"desk":"Desk A1","floor":"Floor 1","date":"next-monday"}'
 ​

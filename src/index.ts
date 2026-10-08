@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import bookingRouter from './routes/booking.routes';
 import { logger } from './middleware/logger';
 import { errorHandler } from './middleware/errorHandler';
+import "dotenv/config";
 
 const app = express();
 const port = 5000;

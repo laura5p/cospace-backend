@@ -1,21 +1,20 @@
 import { z } from "zod";
 
 export const createBookingSchema = z.object({
-  desk: z.string().trim().min(3).max(100),
-  floor: z.string().trim().min(5).max(200),
+  user_id: z.number().int().positive(),
+  desk_id: z.number().int().positive(),
   date: z.iso.date(),
   active: z.boolean().default(true),
 });
-
-export type CreateBookingInput = z.infer<typeof createBookingSchema>;
-
 export const bookingSchema = createBookingSchema.extend({
-  id: z.string()
+  id: z.number().int()
 });
 
-export type Booking = z.infer<typeof bookingSchema>;
 export const patchBookingSchema = z.object({
   active: z.boolean()
 });
 
+
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+export type Booking = z.infer<typeof bookingSchema>;
 export type PatchBookingInput = z.infer<typeof patchBookingSchema>;
